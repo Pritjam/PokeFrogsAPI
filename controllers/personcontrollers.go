@@ -6,9 +6,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"strconv"
-
-	"github.com/gorilla/mux"
 )
 
 //GetAllSave get all save data
@@ -24,12 +21,12 @@ func GetAllSave(w http.ResponseWriter, r *http.Request) {
 //GetSaveByID returns save with specific ID
 func GetSave(w http.ResponseWriter, r *http.Request) {
 	requestBody, _ := ioutil.ReadAll(r.Body)
-	var idpass entity.IDPass
-	json.Unmarshal(requestBody, &idpass)
+	var credentials entity.GetData
+	json.Unmarshal(requestBody, &credentials)
 
 	var save entity.Save
-	database.Connector.First(&save, idpass.ID)
-	if idpass.Password == save.Password {
+	database.Connector.Where("username = ?", credentials.Username).First(&save)
+	if credentials.Password == save.Password {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(save)
 	} else {
@@ -43,7 +40,7 @@ func CreateSave(w http.ResponseWriter, r *http.Request) {
 	var save entity.Save
 	json.Unmarshal(requestBody, &save)
 
-	database.Connector.Create(save)
+	database.Connector.Select("username", "password", "save_data").Create(&save)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(save)
@@ -52,11 +49,11 @@ func CreateSave(w http.ResponseWriter, r *http.Request) {
 //UpdateSaveByID updates save with respective ID
 func UpdateSave(w http.ResponseWriter, r *http.Request) {
 	requestBody, _ := ioutil.ReadAll(r.Body)
-	var save, oldSave entity.Save
+	var oldSave, save entity.Save
 	json.Unmarshal(requestBody, &save)
-	database.Connector.First(&oldSave, save.ID)
+	database.Connector.Where("username = ?", save.Username).First(&oldSave)
 	if oldSave.Password == save.Password {
-		database.Connector.Save(&save)
+		database.Connector.Model(&oldSave).Select("username", "password", "save_data").Updates(&save)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(save)
@@ -65,13 +62,16 @@ func UpdateSave(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//DeletSaveByID delete's save with specific ID
-func DeletSaveByID(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	key := vars["ownerid"]
-
+//DeleteSaveByID delete's save with specific ID
+func DeletSave(w http.ResponseWriter, r *http.Request) {
+	requestBody, _ := ioutil.ReadAll(r.Body)
+	var credentials entity.GetData
+	json.Unmarshal(requestBody, &credentials)
 	var save entity.Save
-	id, _ := strconv.ParseInt(key, 10, 64)
-	database.Connector.Where("ownerid = ?", id).Delete(&save)
+	database.Connector.Where("username = ?", credentials.Username).First(&save)
+
+	if credentials.Password == save.Password {
+		database.Connector.Where("username = ?", save.Username).Delete(&save)
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
