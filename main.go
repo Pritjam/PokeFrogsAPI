@@ -29,15 +29,7 @@ func initaliseHandlers(router *mux.Router) {
 }
 
 func initDB() {
-	config :=
-		database.Config{
-			ServerName: "localhost:3306",
-			User:       "prit",
-			Password:   "",
-			DB:         "pokefrogs",
-		}
-
-	connectionString := database.GetConnectionString(config)
+	connectionString := database.GetConnectionString()
 	err := database.Connect(connectionString)
 	if err != nil {
 		panic(err.Error())
