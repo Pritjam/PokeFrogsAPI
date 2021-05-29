@@ -6,7 +6,19 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"unicode"
+
+	"github.com/gorilla/mux"
 )
+
+func isAlphabetic(s string) bool {
+	for _, r := range s {
+		if !unicode.IsLetter(r) {
+			return false
+		}
+	}
+	return true
+}
 
 //GetAllSave get all save data
 //TODO: make something i'm happy with here
@@ -18,11 +30,31 @@ func GetAllSave(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(saves)
 }
 
+//GetOther returns a string in other_storage, used for quests, market, and more
+func GetOther(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	label := vars["lbl"]
+	if !isAlphabetic(label) {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	var other_storage entity.OtherStorage
+	database.Connector.Select("content").Where("label = ?", label).First(&other_storage)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(other_storage)
+}
+
 //GetSaveByID returns save with specific ID
 func GetSave(w http.ResponseWriter, r *http.Request) {
 	requestBody, _ := ioutil.ReadAll(r.Body)
-	var credentials entity.GetData
+	var credentials entity.Credentials
 	json.Unmarshal(requestBody, &credentials)
+
+	if !isAlphabetic(credentials.Username) {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
 
 	var save entity.Save
 	database.Connector.Where("username = ?", credentials.Username).First(&save)
@@ -65,7 +97,7 @@ func UpdateSave(w http.ResponseWriter, r *http.Request) {
 //DeleteSaveByID delete's save with specific ID
 func DeletSave(w http.ResponseWriter, r *http.Request) {
 	requestBody, _ := ioutil.ReadAll(r.Body)
-	var credentials entity.GetData
+	var credentials entity.Credentials
 	json.Unmarshal(requestBody, &credentials)
 	var save entity.Save
 	database.Connector.Where("username = ?", credentials.Username).First(&save)

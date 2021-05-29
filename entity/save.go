@@ -8,7 +8,11 @@ type Save struct {
 	SaveData string `json:"savedata"`
 }
 
-type GetData struct {
+type Credentials struct {
 	Username string `json:"username"`
 	Password uint64 `json:"password"`
+}
+
+type OtherStorage struct {
+	Content string `json:"content"`
 }

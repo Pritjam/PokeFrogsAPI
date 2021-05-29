@@ -22,7 +22,7 @@ func Connect(connectionString string) error {
 }
 
 //Migrate create/updates database table
-func Migrate(table *entity.Save) {
-	Connector.AutoMigrate(&table)
+func Migrate(saveTable *entity.Save, otherTable *entity.OtherStorage) {
+	Connector.AutoMigrate(&saveTable, &otherTable)
 	log.Println("Table migrated")
 }

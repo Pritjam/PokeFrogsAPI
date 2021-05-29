@@ -23,7 +23,7 @@ func main() {
 func initaliseHandlers(router *mux.Router) {
 	router.HandleFunc("/create", controllers.CreateSave).Methods("POST")
 	router.HandleFunc("/get", controllers.GetSave).Methods("GET")
-	// router.HandleFunc("/get{id, password}", controllers.GetSaveByID).Methods("GET")
+	router.HandleFunc("/get/{lbl}", controllers.GetOther).Methods("GET")
 	router.HandleFunc("/update", controllers.UpdateSave).Methods("PUT")
 	router.HandleFunc("/delete/{id}", controllers.DeletSave).Methods("DELETE")
 }
@@ -42,5 +42,5 @@ func initDB() {
 	if err != nil {
 		panic(err.Error())
 	}
-	database.Migrate(&entity.Save{})
+	database.Migrate(&entity.Save{}, &entity.OtherStorage{})
 }
