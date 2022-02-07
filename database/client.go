@@ -1,7 +1,7 @@
 package database
 
 import (
-	"crud-api/entity"
+	"crud-api/structures"
 	"log"
 
 	"github.com/jinzhu/gorm"
@@ -22,7 +22,7 @@ func Connect(connectionString string) error {
 }
 
 //Migrate create/updates database table
-func Migrate(saveTable *entity.Save, otherTable *entity.OtherStorage) {
+func Migrate(saveTable *structures.Save, otherTable *structures.OtherStorage) {
 	Connector.AutoMigrate(&saveTable, &otherTable)
 	log.Println("Table migrated")
 }

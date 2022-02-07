@@ -1,9 +1,9 @@
 package main
 
 import (
-	"crud-api/controllers"
+	"crud-api/api"
 	"crud-api/database"
-	"crud-api/entity"
+	"crud-api/structures"
 	"log"
 	"net/http"
 
@@ -21,11 +21,12 @@ func main() {
 }
 
 func initaliseHandlers(router *mux.Router) {
-	router.HandleFunc("/create", controllers.CreateSave).Methods("POST")
-	router.HandleFunc("/get", controllers.GetSave).Methods("GET")
-	router.HandleFunc("/get/{lbl}", controllers.GetOther).Methods("GET")
-	router.HandleFunc("/update", controllers.UpdateSave).Methods("PUT")
-	router.HandleFunc("/delete/{id}", controllers.DeletSave).Methods("DELETE")
+	router.HandleFunc("/create", api.CreateSave).Methods("POST")
+	router.HandleFunc("/get", api.GetSave).Methods("GET")
+	router.HandleFunc("/get/all", api.GetAllSave).Methods("GET")
+	router.HandleFunc("/get/{lbl}", api.GetOther).Methods("GET")
+	router.HandleFunc("/update", api.UpdateSave).Methods("PUT")
+	router.HandleFunc("/delete", api.DeleteSave).Methods("DELETE")
 }
 
 func initDB() {
@@ -34,5 +35,5 @@ func initDB() {
 	if err != nil {
 		panic(err.Error())
 	}
-	database.Migrate(&entity.Save{}, &entity.OtherStorage{})
+	database.Migrate(&structures.Save{}, &structures.OtherStorage{})
 }
